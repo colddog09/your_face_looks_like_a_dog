@@ -49,7 +49,10 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
+from flask_cors import CORS
+
 app = Flask(__name__, template_folder='.')
+CORS(app) # Enable CORS for all routes
 
 # 2. 모델 로드 및 설정
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -116,7 +119,4 @@ def predict():
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-# Vercel serverless function handler
-app = app
+    app.run(host='0.0.0.0', port=7860)
