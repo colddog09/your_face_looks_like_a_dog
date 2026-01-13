@@ -49,7 +49,7 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 
 # 2. 모델 로드 및 설정
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
