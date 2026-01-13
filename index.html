@@ -1,0 +1,287 @@
+<link rel="stylesheet" href="static/css/style.css">
+
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="templates/about.html" class="nav-btn">소개</a>
+    </div>
+
+    <!-- Decorative background shapes -->
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="container" id="captureTarget">
+        <div class="branding">By NaPLACE</div>
+        <h1>동물상 판별기</h1>
+        <p class="description">당신은 어떤 동물을 닮으셨을까요?</p>
+
+        <div class="animal-list-container">
+            <p class="small-title">동물 리스트</p>
+            <div class="animal-scroll-wrapper">
+                <span class="animal-badge">개</span>
+                <span class="animal-badge">말</span>
+                <span class="animal-badge">코끼리</span>
+                <span class="animal-badge">나비</span>
+                <span class="animal-badge">닭</span>
+                <span class="animal-badge">고양이</span>
+                <span class="animal-badge">소</span>
+                <span class="animal-badge">양</span>
+                <span class="animal-badge">거미</span>
+                <span class="animal-badge">다람쥐</span>
+                <span class="animal-badge">개</span>
+                <span class="animal-badge">말</span>
+                <span class="animal-badge">코끼리</span>
+                <span class="animal-badge">나비</span>
+                <span class="animal-badge">닭</span>
+                <span class="animal-badge">고양이</span>
+                <span class="animal-badge">소</span>
+                <span class="animal-badge">양</span>
+                <span class="animal-badge">거미</span>
+                <span class="animal-badge">다람쥐</span>
+            </div>
+        </div>
+
+        <label for="fileInput" id="uploadArea" class="upload-area">
+            <span class="upload-icon">📸</span>
+            <span style="font-weight: 600; color: var(--primary);">사진 업로드하기</span>
+            <span style="font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 8px;">클릭 또는 사진 끌어다놓기</span>
+        </label>
+        <input type="file" id="fileInput" accept="image/*">
+
+        <div id="previewContainer" class="preview-container">
+            <img id="preview" alt="Image preview">
+            <div id="cancelOverlay" class="cancel-overlay">
+                <button class="cancel-btn">사진 취소하기</button>
+            </div>
+        </div>
+
+        <div id="loaderContainer" class="loader-container">
+            <div class="loader"></div>
+            <p style="color: var(--primary); font-size: 0.8rem; margin-top: 10px;">판독 중...</p>
+        </div>
+
+        <button id="predictBtn" class="btn">지금 판독하기</button>
+
+        <div id="result"></div>
+
+        <div id="shareContainer" class="share-container">
+            <button id="saveBtn" class="btn-secondary">📸 결과 저장</button>
+            <button onclick="location.reload()" class="btn-secondary" style="margin-top: 5px; opacity: 0.7;">다시
+                하기</button>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewContainer = document.getElementById('previewContainer');
+        const preview = document.getElementById('preview');
+        const cancelOverlay = document.getElementById('cancelOverlay');
+        const resultDiv = document.getElementById('result');
+        const predictBtn = document.getElementById('predictBtn');
+        const loaderContainer = document.getElementById('loaderContainer');
+        const shareContainer = document.getElementById('shareContainer');
+        const saveBtn = document.getElementById('saveBtn');
+
+        let currentAnimal = '';
+
+        function resetUpload() {
+            fileInput.value = '';
+            preview.src = '';
+            previewContainer.style.display = 'none';
+            uploadArea.style.display = 'flex';
+            predictBtn.style.display = 'none';
+            resultDiv.classList.remove('show');
+            resultDiv.innerHTML = '';
+            shareContainer.style.display = 'none';
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                previewContainer.style.display = 'block';
+                uploadArea.style.display = 'none';
+                predictBtn.style.display = 'block';
+                resultDiv.innerText = '';
+                resultDiv.classList.remove('show');
+                shareContainer.style.display = 'none';
+            }
+        });
+
+        cancelOverlay.addEventListener('click', resetUpload);
+
+        predictBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            predictBtn.style.display = 'none';
+            cancelOverlay.style.pointerEvents = 'none';
+            loaderContainer.style.display = 'flex';
+            resultDiv.classList.remove('show');
+
+            // GitHub Pages demo mode - simulate prediction
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const animals = ['개', '말', '코끼리', '나비', '닭', '고양이', '소', '양', '거미', '다람쥐'];
+            const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+
+            loaderContainer.style.display = 'none';
+            cancelOverlay.style.pointerEvents = 'auto';
+
+            currentAnimal = randomAnimal;
+            resultDiv.innerHTML = `당신은 <span class="highlight">${randomAnimal}</span>를 닮으셨습니다`;
+            resultDiv.classList.add('show');
+            document.getElementById('captureTarget').classList.add('show-branding');
+            shareContainer.style.display = 'flex';
+            cancelOverlay.style.display = 'none';
+        });
+
+        // Function to load image from URL
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        // Programmatic Image Generation
+        async function generateResultImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Instagram Story size (1080x1920)
+            const width = 1080;
+            const height = 1920;
+            canvas.width = width;
+            canvas.height = height;
+
+            // 1. Background (Na'PLACE Navy)
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#0f172a');
+            gradient.addColorStop(1, '#1e293b');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+
+            // 2. Branding (Top Right)
+            ctx.font = 'bold 32px "Outfit", sans-serif';
+            ctx.fillStyle = '#ea580c'; // Na'PLACE Orange
+            ctx.textAlign = 'right';
+            ctx.fillText('By NaPLACE', width - 60, 100);
+
+            // 3. Title (Top Center)
+            ctx.font = '800 80px "Outfit", sans-serif';
+            ctx.fillStyle = '#ea580c';
+            ctx.textAlign = 'center';
+            // Add shadow to title
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 6;
+            ctx.fillText('동물상 판별기', width / 2, 280);
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Subtitle
+            ctx.font = '300 36px "Outfit", sans-serif';
+            ctx.fillStyle = '#ecfDF5';
+            ctx.globalAlpha = 0.7;
+            ctx.fillText('당신은 어떤 동물을 닮으셨을까요?', width / 2, 360);
+            ctx.globalAlpha = 1.0;
+
+
+            // 4. Uploaded Image (Center)
+            try {
+                const userImg = await loadImage(preview.src);
+
+                // Define image area
+                const imgMaxWidth = 800;
+                const imgMaxHeight = 800;
+                let drawWidth = userImg.width;
+                let drawHeight = userImg.height;
+
+                // Scale down if needed
+                if (drawWidth > imgMaxWidth || drawHeight > imgMaxHeight) {
+                    const ratio = Math.min(imgMaxWidth / drawWidth, imgMaxHeight / drawHeight);
+                    drawWidth *= ratio;
+                    drawHeight *= ratio;
+                }
+
+                const imgX = (width - drawWidth) / 2;
+                const imgY = 480 + (imgMaxHeight - drawHeight) / 2; // Vertical offset
+
+                // Draw image with border
+                ctx.save();
+                ctx.beginPath();
+                ctx.lineWidth = 12;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.strokeRect(imgX - 6, imgY - 6, drawWidth + 12, drawHeight + 12);
+
+                ctx.drawImage(userImg, imgX, imgY, drawWidth, drawHeight);
+                ctx.restore();
+
+            } catch (err) {
+                console.error("Error loading image for canvas:", err);
+            }
+
+            // 5. Result Text (Bottom) - Multi-color
+            const resultY = 1650;
+
+            ctx.font = '700 64px "Outfit", sans-serif';
+            ctx.textAlign = 'center';
+
+            // Draw "당신은 " in white
+            const prefix = "당신은 ";
+            const suffix = "를 닮으셨습니다";
+
+            // Measure text widths to position correctly
+            ctx.fillStyle = '#ffffff';
+            const prefixWidth = ctx.measureText(prefix).width;
+            ctx.fillStyle = '#ea580c'; // Orange for animal name
+            const animalWidth = ctx.measureText(currentAnimal).width;
+            ctx.fillStyle = '#ffffff';
+            const suffixWidth = ctx.measureText(suffix).width;
+
+            const totalWidth = prefixWidth + animalWidth + suffixWidth;
+            const startX = (width - totalWidth) / 2;
+
+            // Draw each part
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.fillText(prefix, startX, resultY);
+
+            ctx.fillStyle = '#ea580c'; // Orange for animal
+            ctx.fillText(currentAnimal, startX + prefixWidth, resultY);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(suffix, startX + prefixWidth + animalWidth, resultY);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        saveBtn.addEventListener('click', async () => {
+            if (!currentAnimal) return;
+
+            saveBtn.innerText = '저장 중...';
+
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const dataUrl = await generateResultImage();
+
+            const link = document.createElement('a');
+            link.download = `동물상_판별_결과_${currentAnimal}.png`;
+            link.href = dataUrl;
+            link.click();
+
+            saveBtn.innerText = '📸 결과 저장';
+        });
+    </script>
+</body>
+
+</html>
