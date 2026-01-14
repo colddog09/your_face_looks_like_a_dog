@@ -1,10 +1,18 @@
-<link rel="stylesheet" href="static/css/style.css">
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동물상 판별기 - Na'PLACE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2">
 
 </head>
 
 <body>
     <div class="nav-links">
-        <a href="templates/about.html" class="nav-btn">소개</a>
+        <a href="/about" class="nav-btn">소개</a>
     </div>
 
     <!-- Decorative background shapes -->
@@ -19,26 +27,12 @@
         <div class="animal-list-container">
             <p class="small-title">동물 리스트</p>
             <div class="animal-scroll-wrapper">
-                <span class="animal-badge">개</span>
-                <span class="animal-badge">말</span>
-                <span class="animal-badge">코끼리</span>
-                <span class="animal-badge">나비</span>
-                <span class="animal-badge">닭</span>
-                <span class="animal-badge">고양이</span>
-                <span class="animal-badge">소</span>
-                <span class="animal-badge">양</span>
-                <span class="animal-badge">거미</span>
-                <span class="animal-badge">다람쥐</span>
-                <span class="animal-badge">개</span>
-                <span class="animal-badge">말</span>
-                <span class="animal-badge">코끼리</span>
-                <span class="animal-badge">나비</span>
-                <span class="animal-badge">닭</span>
-                <span class="animal-badge">고양이</span>
-                <span class="animal-badge">소</span>
-                <span class="animal-badge">양</span>
-                <span class="animal-badge">거미</span>
-                <span class="animal-badge">다람쥐</span>
+                {% for animal in classes %}
+                <span class="animal-badge">{{ animal }}</span>
+                {% endfor %}
+                {% for animal in classes %}
+                <span class="animal-badge">{{ animal }}</span>
+                {% endfor %}
             </div>
         </div>
 
@@ -121,22 +115,40 @@
             loaderContainer.style.display = 'flex';
             resultDiv.classList.remove('show');
 
-            // GitHub Pages demo mode - simulate prediction
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const formData = new FormData();
+            formData.append('file', file);
 
-            const animals = ['개', '말', '코끼리', '나비', '닭', '고양이', '소', '양', '거미', '다람쥐'];
-            const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
 
-            loaderContainer.style.display = 'none';
-            cancelOverlay.style.pointerEvents = 'auto';
+                loaderContainer.style.display = 'none';
+                cancelOverlay.style.pointerEvents = 'auto';
 
-            currentAnimal = randomAnimal;
-            resultDiv.innerHTML = `당신은 <span class="highlight">${randomAnimal}</span>를 닮으셨습니다`;
-            resultDiv.classList.add('show');
-            document.getElementById('captureTarget').classList.add('show-branding');
-            shareContainer.style.display = 'flex';
-            cancelOverlay.style.display = 'none';
+                if (data.animal) {
+                    currentAnimal = data.animal;
+                    resultDiv.innerHTML = `당신은 <span class="highlight">${data.animal}</span>를 닮으셨습니다`;
+                    resultDiv.classList.add('show');
+                    document.getElementById('captureTarget').classList.add('show-branding');
+                    shareContainer.style.display = 'flex';
+                    cancelOverlay.style.display = 'none';
+                } else {
+                    resultDiv.innerText = '오류가 발생했습니다.';
+                    resultDiv.classList.add('show');
+                    predictBtn.style.display = 'block';
+                }
+            } catch (e) {
+                loaderContainer.style.display = 'none';
+                cancelOverlay.style.pointerEvents = 'auto';
+                resultDiv.innerText = '서버 연결 실패';
+                resultDiv.classList.add('show');
+                predictBtn.style.display = 'block';
+            }
         });
+
 
         // Function to load image from URL
         function loadImage(src) {

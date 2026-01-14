@@ -8,6 +8,7 @@ import sys
 import os
 import sys
 import os
+import time
 
 # 1. 모델 구조 정의 (User Provided Architecture)
 class CNN(nn.Module):
@@ -104,11 +105,14 @@ def predict():
 
     try:
         img_bytes = file.read()
+        print(f"Received image: {file.filename}, size: {len(img_bytes)}") # Debug Log
         tensor = transform_image(img_bytes)
         
         with torch.no_grad(): # Optimization: Disable gradient calculation for inference
+            start_time = time.time()
             outputs = model(tensor)
             _, predicted = torch.max(outputs, 1)
+            print(f"Inference time: {time.time() - start_time:.4f}s, Prediction: {predicted.item()}") # Debug Log
         
         result = classes[predicted.item()]
         return jsonify({'animal': result})
