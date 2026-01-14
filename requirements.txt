@@ -1,4 +1,10 @@
-Flask==3.0.0
-torch==2.1.0
-torchvision==0.16.0
-Pillow==10.1.0
+flask
+pillow
+gunicorn
+# CPU-only PyTorch versions to reduce slug size on Render
+# Note: Render might still install standard torch if not careful, but specifying the index-url in the command helps.
+# For requirements.txt, we list the package names. The platform specific installation is often handled better by pip commands.
+# However, to be safe and explicit for standard python environments:
+torch
+torchvision
+--extra-index-url https://download.pytorch.org/whl/cpu

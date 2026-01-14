@@ -49,12 +49,10 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__)
 
 # 2. 모델 로드 및 설정
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-if torch.backends.mps.is_available():
-    device = torch.device('mps')
+device = torch.device('cpu') # Server environment usually has no GPU in free tier
 
 num_classes = 10 # animals10 기준
 model = CNN(num_classes=num_classes).to(device)
@@ -107,8 +105,10 @@ def predict():
     try:
         img_bytes = file.read()
         tensor = transform_image(img_bytes)
-        outputs = model(tensor)
-        _, predicted = torch.max(outputs, 1)
+        
+        with torch.no_grad(): # Optimization: Disable gradient calculation for inference
+            outputs = model(tensor)
+            _, predicted = torch.max(outputs, 1)
         
         result = classes[predicted.item()]
         return jsonify({'animal': result})
@@ -116,7 +116,6 @@ def predict():
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-# Vercel serverless function handler
-app = app
+    # Use PORT environment variable if available (Render sets this)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
