@@ -1,5 +1,0 @@
-Flask==3.0.0
-flask-cors
-torch>=2.5.0
-torchvision>=0.20.0
-Pillow>=10.1.0
