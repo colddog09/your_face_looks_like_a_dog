@@ -50,7 +50,10 @@ class CNN(nn.Module):
         x = self.fc(x)
         return x
 
-app = Flask(__name__)
+from flask_cors import CORS
+
+app = Flask(__name__, template_folder='.', static_folder='static')
+CORS(app) # Enable CORS for all routes
 
 # 2. 모델 로드 및 설정
 device = torch.device('cpu') # Server environment usually has no GPU in free tier

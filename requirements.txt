@@ -1,4 +1,5 @@
 flask
+flask-cors
 pillow
 gunicorn
 # CPU-only PyTorch versions to reduce slug size on Render

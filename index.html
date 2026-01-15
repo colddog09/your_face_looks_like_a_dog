@@ -119,7 +119,10 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch('/predict', {
+                // Call Render API (Hybrid)
+                // REPLACE WITH YOUR ACTUAL RENDER URL BELOW
+                const renderUrl = 'https://YOUR-RENDER-URL.onrender.com';
+                const response = await fetch(`${renderUrl}/predict`, {
                     method: 'POST',
                     body: formData
                 });
